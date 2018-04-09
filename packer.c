@@ -4,14 +4,17 @@
 #include <stdlib.h>
 
 /*
-void print_to_buffer(){
+void print_HW(){
+    // ['0x48', '0x65', '0x6c', '0x6c', '0x6f', '0x20', '0x57', '0x6f', '0x72', '0x6c', '0x64', '0x21']
     asm volatile(
-        "mov  $0x7A7A6946, %%rax\n"
+        "mov  $0x0A21646C72, %%rax\n"
         "push %%rax\n"
+        "mov  $0x6F57206F6C6C6548, %%rax\n"
+        "push %%rax\n"
+        "mov %%rsp, %%rsi\n" 
         "mov $0x1, %%rax\n"
         "mov $0x1, %%rdi\n"
-        "mov %%rsp, %%rsi\n" // *buff_i
-        "mov $0x04, %%rdx\n" // length 
+        "mov $0x0D, %%rdx\n" 
         "syscall\n"
         ::: "rsp", "rdi", "rsi", "rdx");
     return;
@@ -48,16 +51,24 @@ void print_buff(uint8_t *buff, unsigned int len) {
 
 
 int main(){
+    uint8_t key1[] = {0x02,0x6f,0x86,0xf8,0x39};
+    uint8_t key2[] = {0x9a,0xaa,0x04,0x79,0x47,0xec,0x5d,0xe2};
     
-    uint8_t key[] = {0x02,0x6f,0x86,0xf8,0x39};
-    
-    unsigned int length = 50;
+    unsigned int length = 48;
 
     unsigned int key_length = 5;
 
     uint8_t *buff_out;
     uint8_t *buff_final;
     
+    uint8_t buff_hw[] = {
+            0x48,0xb8,0x72,0x6c,0x64,0x21,0x0a,0x00,
+            0x00,0x00,0x50,0x48,0xb8,0x48,0x65,0x6c,
+            0x6c,0x6f,0x20,0x57,0x6f,0x50,0x48,0x89,
+            0xe6,0x48,0xc7,0xc0,0x01,0x00,0x00,0x00,
+            0x48,0xc7,0xc7,0x01,0x00,0x00,0x00,0x48,
+            0xc7,0xc2,0x0d,0x00,0x00,0x00,0x0f,0x05};
+
     uint8_t buff_in[] = {
             0x42,0x42,0x42,0x42,0x42,0x42,0x42,0x42,0x42,0x42,
             0x42,0x42,0x42,0x42,0x42,0x42,0x42,0x42,0x42,0x42,
@@ -68,12 +79,17 @@ int main(){
     buff_out = malloc((length)*sizeof(uint8_t));
     buff_final = malloc((length)*sizeof(uint8_t));
 
-    print_buff(buff_in, length );
-    pack_XOR(key, length, key_length, buff_in, buff_out);
+    print_buff(buff_hw, length );
+    pack_XOR(key2, length, key_length, buff_hw, buff_out);
 
     print_buff(buff_out, length );
 
-    pack_XOR(key, length, key_length, buff_out, buff_final);
+    pack_XOR(key1, length, key_length, buff_out, buff_final);
+
+    print_buff(buff_final, length );
+
+    pack_XOR(key2, length, key_length, buff_final, buff_out);
+    pack_XOR(key1, length, key_length, buff_out, buff_final);
 
     print_buff(buff_final, length );
 
